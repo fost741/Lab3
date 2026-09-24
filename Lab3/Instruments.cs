@@ -205,13 +205,55 @@ public class Instruments
         return $"Instrument {name} [{RegCode}] was successfuly connected to power.";
     }
 
-    public string SetVolume(int volume) //встановлення гучності інструменту
+    //public string SetVolume(int volume) //встановлення гучності інструменту
+    //{
+    //    if (!isElectric) return $"Can not set volume for this instrument. Instrument {name} [{RegCode}] is acoustic instrument.";
+    //    if (volume < 0 || volume > 100) return $"Can not set this volume. Volume should be between 0 and 100.";
+    //    currentVolume = volume;
+    //    return $"Volume for instrument {name} [{RegCode}] is set to {currentVolume}%.";
+    //}
+
+    public void SetVolume(int volume) 
     {
-        if (!isElectric) return $"Can not set volume for this instrument. Instrument {name} [{RegCode}] is acoustic instrument.";
-        if (volume < 0 || volume > 100) return $"Can not set this volume. Volume should be between 0 and 100.";
-        currentVolume = volume;
-        return $"Volume for instrument {name} [{RegCode}] is set to {currentVolume}%.";
+        CurrentVolume = volume;
+        Console.WriteLine($"Volume was changed to {CurrentVolume} %");
+    }
+    public void SetVolume(double sec, bool isMuted) //slightly fade out
+    {
+        if (!isMuted)
+        {
+            SetVolume((int)sec); return;
+        }
+        Console.WriteLine($"Volume of {name} [{RegCode}] is started to fade out for {sec} seconds");
+        int steps = CurrentVolume;
+        if (steps == 0) return;
+
+        int delayMs = (int)(sec * 1000 / steps);
+
+        while (CurrentVolume > 0)
+        {
+            CurrentVolume--;
+            if(CurrentVolume % 10 == 0)
+            {
+                Console.WriteLine($"Volume of {name} [{RegCode}] is now at {CurrentVolume}%");
+            }
+        }
+        Console.WriteLine($"Volume of {name} [{RegCode}] has reached 0%");
     }
 
+    public void SetVolume(int volume, string roomType) //adjust volume based on room type
+    {
+        double coeff = roomType.ToLower() switch
+        {
+            "concert hall" => 1.0,
+            "studio" => 0.8,
+            "home" => 0.5,
+            _ => 0.5
+        };
+
+        int adjustedVol = (int)(volume * coeff);
+        SetVolume(adjustedVol);
+        Console.WriteLine($"Volume adjusted for {name} [{RegCode}] in {roomType}: {adjustedVol}%");
+    }
 }
 
