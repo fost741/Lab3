@@ -19,6 +19,20 @@ public class Instruments
     }
     public string RegCode { get; private set; } = "REG_00"; //автовластивістьб індивідуальний код інструменту
 
+    public Instruments(string name, Family family, Brand brand) : this()
+    {
+        Name = name;
+        Family = family;
+        Brand = brand;
+    }
+
+    public Instruments(string name, Family family, Brand brand, bool isElectric, int keyCount, int stringCount) : this(name, family, brand)
+    {
+        IsElectric = isElectric;
+        KeyCount = keyCount;
+        StringCount = stringCount;
+    }
+
     public string Name
     { get { return name; }
         set
