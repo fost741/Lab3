@@ -59,16 +59,17 @@ namespace Lab_2
                                 "2. Add randomly\n");
             int mode = Menu("Choose option: ", 1, 2);
 
-            Instruments inst = new Instruments();
+            Instruments inst = null;
             if (mode == 1)
             {
+                string name = "";
                 while (true)
                 {
                     try
                     {
                         Console.Write("Enter name(f.e. piano): ");
-                        string name = Console.ReadLine()?.Trim();
-                        if (!string.IsNullOrEmpty(name)) { inst.Name = name; break; }
+                        name = Console.ReadLine()?.Trim();
+                        if (!string.IsNullOrEmpty(name)) break;
                     }
                     catch (ArgumentException ex)
                     {
@@ -76,7 +77,7 @@ namespace Lab_2
                     }
                 }
 
-                Family selectedFamily;
+                Family selectedFamily = Family.Strings;
                 while (true)
                 {
                     try
@@ -84,30 +85,20 @@ namespace Lab_2
                         Console.Write("Enter family(strings / woodwinds / brass / percussion / keyboard): ");
                         string inp = Console.ReadLine();
 
+                        string lowName = inst.Name.ToLower();
                         if (!string.IsNullOrEmpty(inp) && Enum.TryParse<Family>(inp, true, out selectedFamily))
                         {
-                            if ((inst.Name.ToLower().Contains("guitar") || inst.Name.ToLower().Contains("violin") || inst.Name.ToLower().Contains("ukulele")) && selectedFamily != Family.Strings)
-                            {
+                            if ((lowName.Contains("guitar") || lowName.Contains("violin") || lowName.Contains("ukulele")) && selectedFamily != Family.Strings)
                                 throw new ArgumentException($"Wrong family. Instrument {inst.Name} belongs to STRINGS family.");
-                            }
-                            else if ((inst.Name.ToLower().Contains("piano") || inst.Name.ToLower().Contains("keyboard")) && selectedFamily != Family.Keyboard)
-                            {
+                            else if ((lowName.Contains("piano") || lowName.Contains("keyboard")) && selectedFamily != Family.Keyboard)
                                 throw new ArgumentException($"Wrong family. Instrument {inst.Name} belongs to KEYBOARD family.");
-                            }
-                            else if ((inst.Name.ToLower().Contains("flute") || inst.Name.ToLower().Contains("clarinet")) && selectedFamily != Family.Woodwinds)
-                            {
+                            else if ((lowName.Contains("flute") || lowName.Contains("clarinet")) && selectedFamily != Family.Woodwinds)
                                 throw new ArgumentException($"Wrong family. Instrument {inst.Name} belongs to WOODWINDS family.");
-                            }
-                            else if ((inst.Name.ToLower().Contains("trumpet")) && selectedFamily != Family.Brass)
-                            {
+                            else if ((lowName.Contains("trumpet")) && selectedFamily != Family.Brass)
                                 throw new ArgumentException($"Wrong family. Instrument {inst.Name} belongs to BRASS family.");
-                            }
-                            else if ((inst.Name.ToLower().Contains("drum")) && selectedFamily != Family.Percussion)
-                            {
+                            else if ((lowName.Contains("drum")) && selectedFamily != Family.Percussion)
                                 throw new ArgumentException($"Wrong family. Instrument {inst.Name} belongs to PERCUSSION family.");
-                            }
 
-                            inst.Family = selectedFamily;
                             break;
                         }
                     }
@@ -118,18 +109,14 @@ namespace Lab_2
                 }
 
 
-                Brand selectedBrand;
+                Brand selectedBrand = Brand.Yamaha;
                 while (true)
                 {
                     try
                     {
                         Console.Write("Enter brand(f.e. yamaha): ");
                         string inp = Console.ReadLine();
-                        if (!string.IsNullOrEmpty(inp) && Enum.TryParse<Brand>(inp, true, out selectedBrand))
-                        {
-                            inst.Brand = selectedBrand;
-                            break;
-                        }
+                        if (!string.IsNullOrEmpty(inp) && Enum.TryParse<Brand>(inp, true, out selectedBrand)) break;
                     }
                     catch (ArgumentException ex)
                     {
@@ -137,41 +124,47 @@ namespace Lab_2
                     }
                 }
 
+                bool isElectric = false;
                 while (true)
                 {
                     Console.Write("Need power or not (1 - yes, 0 - no): ");
                     string inp = Console.ReadLine();
 
-                    if (inp == "1") { inst.IsElectric = true; break; }
+                    if (inp == "1") { isElectric = true; break; }
 
-                    else if (inp == "0") { inst.IsElectric = false; break; }
+                    else if (inp == "0") { isElectric = false; break; }
                     else Console.WriteLine("Invalid input. Try again.");
 
                 }
 
-                inst.StringCount = StringCount(inst.Name, inst.Family);
-                inst.KeyCount = KeyCount(inst.Family, inst.IsElectric);
+                inst.StringCount = StringCount(name, selectedFamily);
+                inst.KeyCount = KeyCount(selectedFamily, isElectric);
+
+                inst = new Instruments(name, selectedFamily, selectedBrand, isElectric, inst.KeyCount, inst.StringCount);
 
                 inst.IsConnected = false;
-                string tune = inst.Tune();
-                Console.WriteLine(tune);
+                Console.WriteLine(inst.Tune());
                 inst.CurrentVolume = inst.IsElectric ? Menu("Enter start volume (0-100%): ", 0, 100) : 0;
             }
             else
             {
                 Random rand = new Random();
                 string[] names = { "guitar", "violin", "piano", "keyboard", "drums", "ukulele", "flute", "clarinet", "trumpet" };
-                inst.Name = names[rand.Next(names.Length)];
+                string randName = names[rand.Next(names.Length)];
 
-                string nameToLow = inst.Name.ToLower();
-                if (nameToLow.Contains("guitar") || nameToLow.Contains("violin") || nameToLow.Contains("ukulele")) inst.Family = Family.Strings;
-                else if (nameToLow.Contains("piano") || nameToLow.Contains("keyboard")) inst.Family = Family.Keyboard;
-                else if (nameToLow.Contains("flute") || nameToLow.Contains("clarinet")) inst.Family = Family.Woodwinds;
-                else if (nameToLow.Contains("trumpet")) inst.Family = Family.Brass;
-                else inst.Family = Family.Percussion;
+                string nameToLow = randName.ToLower();
+                Family randFamily;
+                if (nameToLow.Contains("guitar") || nameToLow.Contains("violin") || nameToLow.Contains("ukulele")) randFamily= Family.Strings;
+                else if (nameToLow.Contains("piano") || nameToLow.Contains("keyboard")) randFamily = Family.Keyboard;
+                else if (nameToLow.Contains("flute") || nameToLow.Contains("clarinet")) randFamily = Family.Woodwinds;
+                else if (nameToLow.Contains("trumpet")) randFamily = Family.Brass;
+                else randFamily = Family.Percussion;
 
                 Array brands = Enum.GetValues(typeof(Brand));
-                inst.Brand = (Brand)brands.GetValue(rand.Next(brands.Length));
+                Brand randBrand = (Brand)brands.GetValue(rand.Next(brands.Length));
+
+                inst = new Instruments(randName, randFamily, randBrand);
+
                 inst.IsElectric = rand.Next(0, 2) == 1;
 
                 if (inst.Family == Family.Strings)
@@ -191,8 +184,7 @@ namespace Lab_2
                 }
 
                 inst.IsConnected = false;
-                string tune = inst.Tune();
-                Console.WriteLine(tune);
+                Console.WriteLine(inst.Tune());
                 inst.CurrentVolume = inst.IsElectric ? 50 : 0;
                 Console.WriteLine("Object has been generated successfuly! ");
             }
@@ -331,6 +323,7 @@ namespace Lab_2
 
             ShowAll(list);
             int index = Menu("Choose instrument number to show behaviour (0 to cancel): ", 0, list.Count);
+            if (index == 0) return;
 
             while (true)
             {
@@ -359,8 +352,36 @@ namespace Lab_2
                             Console.WriteLine("Error: This instrument is not electric and does not have volume control.");
                             break;
                         }
-                        int newVolume = Menu("Enter new volume (0-100%): ", 0, 100);
-                        Console.WriteLine(list[index - 1].SetVolume(newVolume));
+
+                        Console.WriteLine("\n Volume Modes " + "\n1.Standart set" + "\n2.Fading out" + "\n3.Based on room type");
+                        int volumeMode = Menu("Choose volume mode: ", 1, 3);
+
+                        if (volumeMode == 1)
+                        {
+                            int newVolume = Menu("Enter new volume (0-100%): ", 0, 100);
+                            list[index - 1].SetVolume(newVolume);
+                            Console.WriteLine("Volume set to standard level.");
+                        }
+                        else if (volumeMode == 2)
+                        {
+                            int seconds = Menu("Enter duration for fading out (seconds): ", 0, 60);
+                            bool isMuted = Menu("Mute after fading out completely? (1 - yes, 0 - no): ", 0, 1) == 1;
+                            list[index-1].SetVolume(seconds, isMuted);
+                            Console.WriteLine("Volume fading out.");
+                        }
+                        else if (volumeMode == 3)
+                        {
+                            string room = Menu("Choose room type (1-concert hall, 2-studio, 3-home): ", 1, 3) switch
+                            {
+                                1 => "concert hall",
+                                2 => "studio",
+                                3 => "home",
+                                _ => throw new ArgumentException("Invalid room type.")
+                            };
+                            list[index-1].SetVolume(list[index - 1].CurrentVolume, room);
+                            Console.WriteLine("Volume adjusted based on room type.");
+                        }
+
                         break;
                     case 0:
                         return;
@@ -394,19 +415,13 @@ namespace Lab_2
                     if (int.TryParse(inp, out strings))
                     {
                         if ((nameLow.Contains("ukulele") || nameLow.Contains("violin")) && strings != 4)
-                        {
                             throw new ArgumentException($"Error: {name} must have exactly 4 strings.");
-                        }
 
                         if (nameLow.Contains("guitar") && strings != 6 && strings != 7 && strings != 12)
-                        {
                             throw new ArgumentException("Error. Guitar must have 6, 7, or 12 strings.");
-                        }
 
                         if (strings < 4)
-                        {
                             throw new ArgumentException("Error: String instrument must have at least 4 strings.");
-                        }
 
                         return strings;
                     }
@@ -429,13 +444,9 @@ namespace Lab_2
                     if (int.TryParse(inp, out keys))
                     {
                         if (!isElectric && keys != 88)
-                        {
                             throw new ArgumentException("Error: Acoustic keyboard instruments (like piano) must have 88 keys!");
-                        }
                         if (isElectric && keys != 61 && keys != 76 && keys != 88)
-                        {
                             throw new ArgumentException("Error: Electric keyboard instruments must have 61, 76 or 88 keys!");
-                        }
                         return keys;
                     }
                 }

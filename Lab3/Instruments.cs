@@ -16,6 +16,7 @@ public class Instruments
     {
         count++;
         RegCode = $"REG-{count:D2}";
+        Console.WriteLine($"(Constructor (by default) was called for {RegCode})");
     }
     public string RegCode { get; private set; } = "REG_00"; //автовластивістьб індивідуальний код інструменту
 
@@ -24,6 +25,7 @@ public class Instruments
         Name = name;
         Family = family;
         Brand = brand;
+        Console.WriteLine($"(Constructor with 3 parameters was called for {RegCode})");
     }
 
     public Instruments(string name, Family family, Brand brand, bool isElectric, int keyCount, int stringCount) : this(name, family, brand)
@@ -31,6 +33,7 @@ public class Instruments
         IsElectric = isElectric;
         KeyCount = keyCount;
         StringCount = stringCount;
+        Console.WriteLine($"(Constructor with 6 parameters was called for {RegCode})");
     }
 
     public string Name
